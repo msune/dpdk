@@ -811,6 +811,29 @@ struct rte_eth_conf {
 #define DEV_TX_OFFLOAD_OUTER_IPV4_CKSUM 0x00000080 /**< Used for tunneling packet. */
 #define DEV_TX_OFFLOAD_QINQ_INSERT 0x00000100
 
+/**
+ * Device supported speeds
+ */
+#define ETH_SPEED_CAP_NOT_PHY	(0)  /*< No phy media > */
+#define ETH_SPEED_CAP_10M_HD	(1 << 0)  /*< 10 Mbps half-duplex> */
+#define ETH_SPEED_CAP_10M_FD	(1 << 1)  /*< 10 Mbps full-duplex> */
+#define ETH_SPEED_CAP_100M_HD	(1 << 2)  /*< 100 Mbps half-duplex> */
+#define ETH_SPEED_CAP_100M_FD	(1 << 3)  /*< 100 Mbps full-duplex> */
+#define ETH_SPEED_CAP_1G	(1 << 4)  /*< 1 Gbps > */
+#define ETH_SPEED_CAP_2_5G	(1 << 5)  /*< 2.5 Gbps > */
+#define ETH_SPEED_CAP_5G	(1 << 6)  /*< 5 Gbps > */
+#define ETH_SPEED_CAP_10G	(1 << 7)  /*< 10 Mbps > */
+#define ETH_SPEED_CAP_20G	(1 << 8)  /*< 20 Gbps > */
+#define ETH_SPEED_CAP_25G	(1 << 9)  /*< 25 Gbps > */
+#define ETH_SPEED_CAP_40G	(1 << 10)  /*< 40 Gbps > */
+#define ETH_SPEED_CAP_50G	(1 << 11)  /*< 50 Gbps > */
+#define ETH_SPEED_CAP_56G	(1 << 12)  /*< 56 Gbps > */
+#define ETH_SPEED_CAP_100G	(1 << 13)  /*< 100 Gbps > */
+
+
+/**
+ * Ethernet device information
+ */
 struct rte_eth_dev_info {
 	struct rte_pci_device *pci_dev; /**< Device PCI information. */
 	const char *driver_name; /**< Device Driver name. */
@@ -837,6 +860,7 @@ struct rte_eth_dev_info {
 	uint16_t vmdq_queue_base; /**< First queue ID for VMDQ pools. */
 	uint16_t vmdq_queue_num;  /**< Queue number for VMDQ pools. */
 	uint16_t vmdq_pool_base;  /**< First ID of VMDQ pools. */
+	uint32_t speed_capa;  /**< Supported speeds bitmap (ETH_SPEED_CAP_). */
 };
 
 /** Maximum name length for extended statistics counters */
