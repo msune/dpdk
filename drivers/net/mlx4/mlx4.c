@@ -4264,6 +4264,10 @@ mlx4_dev_infos_get(struct rte_eth_dev *dev, struct rte_eth_dev_info *info)
 		 0);
 	if (priv_get_ifname(priv, &ifname) == 0)
 		info->if_index = if_nametoindex(ifname);
+
+	info->speed_capa = ETH_SPEED_CAP_10G |ETH_SPEED_CAP_40G |
+					ETH_SPEED_CAP_56G;
+
 	priv_unlock(priv);
 }
 

@@ -1908,6 +1908,12 @@ eth_igb_infos_get(struct rte_eth_dev *dev, struct rte_eth_dev_info *dev_info)
 
 	dev_info->rx_desc_lim = rx_desc_lim;
 	dev_info->tx_desc_lim = tx_desc_lim;
+
+	dev_info->speed_capa = ETH_SPEED_CAP_10M_HD |
+					ETH_SPEED_CAP_10M_FD |
+					ETH_SPEED_CAP_100M_HD |
+					ETH_SPEED_CAP_100M_FD |
+					ETH_SPEED_CAP_1G;
 }
 
 static void

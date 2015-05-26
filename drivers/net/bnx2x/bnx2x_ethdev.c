@@ -347,6 +347,7 @@ bnx2x_dev_infos_get(struct rte_eth_dev *dev, __rte_unused struct rte_eth_dev_inf
 	dev_info->min_rx_bufsize = BNX2X_MIN_RX_BUF_SIZE;
 	dev_info->max_rx_pktlen  = BNX2X_MAX_RX_PKT_LEN;
 	dev_info->max_mac_addrs  = BNX2X_MAX_MAC_ADDRS;
+	dev_info->speed_capa = ETH_SPEED_CAP_10G | ETH_SPEED_CAP_20G;
 }
 
 static void

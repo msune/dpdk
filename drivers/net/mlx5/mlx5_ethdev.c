@@ -523,6 +523,13 @@ mlx5_dev_infos_get(struct rte_eth_dev *dev, struct rte_eth_dev_info *info)
 	 * size if it is not fixed.
 	 * The API should be updated to solve this problem. */
 	info->reta_size = priv->ind_table_max_size;
+
+	info->speed_capa = ETH_SPEED_CAP_1G | ETH_SPEED_CAP_10G |
+					ETH_SPEED_CAP_25G |
+					ETH_SPEED_CAP_40G |
+					ETH_SPEED_CAP_50G |
+					ETH_SPEED_CAP_100G;
+
 	priv_unlock(priv);
 }
 

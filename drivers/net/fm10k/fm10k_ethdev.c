@@ -1333,6 +1333,10 @@ fm10k_dev_infos_get(struct rte_eth_dev *dev,
 		.nb_min = FM10K_MIN_TX_DESC,
 		.nb_align = FM10K_MULT_TX_DESC,
 	};
+
+	dev_info->speed_capa = ETH_SPEED_CAP_1G | ETH_SPEED_CAP_2_5G |
+					ETH_SPEED_CAP_10G | ETH_SPEED_CAP_25G |
+					ETH_SPEED_CAP_40G | ETH_SPEED_CAP_100G;
 }
 
 static int
