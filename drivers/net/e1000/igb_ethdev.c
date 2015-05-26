@@ -1570,6 +1570,12 @@ eth_igb_infos_get(struct rte_eth_dev *dev, struct rte_eth_dev_info *dev_info)
 		},
 		.txq_flags = 0,
 	};
+
+	dev_info->speed_capa = ETH_SPEED_CAP_10M_HD |
+					ETH_SPEED_CAP_10M_FD |
+					ETH_SPEED_CAP_100M_HD |
+					ETH_SPEED_CAP_100M_FD |
+					ETH_SPEED_CAP_1G;
 }
 
 static void

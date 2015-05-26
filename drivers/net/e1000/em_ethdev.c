@@ -933,6 +933,12 @@ eth_em_infos_get(struct rte_eth_dev *dev, struct rte_eth_dev_info *dev_info)
 
 	dev_info->max_rx_queues = 1;
 	dev_info->max_tx_queues = 1;
+
+	dev_info->speed_capa = ETH_SPEED_CAP_10M_HD |
+					ETH_SPEED_CAP_10M_FD |
+					ETH_SPEED_CAP_100M_HD |
+					ETH_SPEED_CAP_100M_FD |
+					ETH_SPEED_CAP_1G;
 }
 
 /* return 0 means link status changed, -1 means not changed */

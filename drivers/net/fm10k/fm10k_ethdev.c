@@ -964,6 +964,9 @@ fm10k_dev_infos_get(struct rte_eth_dev *dev,
 				ETH_TXQ_FLAGS_NOOFFLOADS,
 	};
 
+	dev_info->speed_capa = ETH_SPEED_CAP_1G | ETH_SPEED_CAP_2_5G |
+					ETH_SPEED_CAP_10G | ETH_SPEED_CAP_25G |
+					ETH_SPEED_CAP_40G | ETH_SPEED_CAP_100G;
 }
 
 static int
