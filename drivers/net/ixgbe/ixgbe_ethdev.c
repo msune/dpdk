@@ -2399,6 +2399,16 @@ ixgbe_dev_info_get(struct rte_eth_dev *dev, struct rte_eth_dev_info *dev_info)
 	dev_info->hash_key_size = IXGBE_HKEY_MAX_INDEX * sizeof(uint32_t);
 	dev_info->reta_size = ETH_RSS_RETA_SIZE_128;
 	dev_info->flow_type_rss_offloads = IXGBE_RSS_OFFLOAD_ALL;
+
+	dev_info->speed_capa = ETH_SPEED_CAP_1G | ETH_SPEED_CAP_10G;
+
+	if (hw->mac.type == ixgbe_mac_X540 ||
+	    hw->mac.type == ixgbe_mac_X540_vf ||
+	    hw->mac.type == ixgbe_mac_X550 ||
+	    hw->mac.type == ixgbe_mac_X550_vf)
+
+		dev_info->speed_capa |= ETH_SPEED_CAP_100M_FD
+					/*| ETH_SPEED_CAP_100M_HD*/;
 }
 
 static void

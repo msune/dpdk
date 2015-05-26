@@ -3847,6 +3847,10 @@ mlx4_dev_infos_get(struct rte_eth_dev *dev, struct rte_eth_dev_info *info)
 		  DEV_TX_OFFLOAD_UDP_CKSUM |
 		  DEV_TX_OFFLOAD_TCP_CKSUM) :
 		 0);
+
+	info->speed_capa = ETH_SPEED_CAP_10G | ETH_SPEED_CAP_40G |
+					ETH_SPEED_CAP_56G;
+
 	priv_unlock(priv);
 }
 
