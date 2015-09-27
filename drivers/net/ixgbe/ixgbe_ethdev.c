@@ -1676,14 +1676,13 @@ ixgbe_dev_start(struct rte_eth_dev *dev)
 	int mask = 0;
 	int status;
 	uint16_t vf, idx;
+	uint32_t *link_speeds;
 
 	PMD_INIT_FUNC_TRACE();
 
 	/* IXGBE devices don't support half duplex */
-	if ((dev->data->dev_conf.link_duplex != ETH_LINK_AUTONEG_DUPLEX) &&
-			(dev->data->dev_conf.link_duplex != ETH_LINK_FULL_DUPLEX)) {
-		PMD_INIT_LOG(ERR, "Invalid link_duplex (%hu) for port %hhu",
-			     dev->data->dev_conf.link_duplex,
+	if (dev->data->dev_conf.link_speeds & ETH_LINK_SPEED_NO_AUTONEG) {
+		PMD_INIT_LOG(ERR, "Invalid link_speeds for port %hhu; autonegociation disabled",
 			     dev->data->port_id);
 		return -EINVAL;
 	}
@@ -1769,31 +1768,21 @@ ixgbe_dev_start(struct rte_eth_dev *dev)
 	if (err)
 		goto error;
 
-	switch(dev->data->dev_conf.link_speed) {
-	case ETH_LINK_SPEED_AUTONEG:
-		speed = (hw->mac.type != ixgbe_mac_82598EB) ?
-				IXGBE_LINK_SPEED_82599_AUTONEG :
-				IXGBE_LINK_SPEED_82598_AUTONEG;
-		break;
-	case ETH_LINK_SPEED_100:
-		/*
-		 * Invalid for 82598 but error will be detected by
-		 * ixgbe_setup_link()
-		 */
-		speed = IXGBE_LINK_SPEED_100_FULL;
-		break;
-	case ETH_LINK_SPEED_1000:
-		speed = IXGBE_LINK_SPEED_1GB_FULL;
-		break;
-	case ETH_LINK_SPEED_10000:
-		speed = IXGBE_LINK_SPEED_10GB_FULL;
-		break;
-	default:
-		PMD_INIT_LOG(ERR, "Invalid link_speed (%hu) for port %hhu",
-			     dev->data->dev_conf.link_speed,
-			     dev->data->port_id);
+	link_speeds = &dev->data->dev_conf.link_speeds;
+	if (*link_speeds & ~(ETH_LINK_SPEED_100M | ETH_LINK_SPEED_1G |
+							ETH_LINK_SPEED_10G)) {
+		PMD_INIT_LOG(ERR, "Invalid link setting");
 		goto error;
 	}
+
+	speed = 0x0;
+
+	if (*link_speeds & ETH_LINK_SPEED_10G)
+		speed |= IXGBE_LINK_SPEED_10GB_FULL;
+	if (*link_speeds & ETH_LINK_SPEED_1G)
+		speed |= IXGBE_LINK_SPEED_1GB_FULL;
+	if (*link_speeds & ETH_LINK_SPEED_100M)
+		speed |= IXGBE_LINK_SPEED_100_FULL;
 
 	err = ixgbe_setup_link(hw, speed, link_up);
 	if (err)
@@ -2400,15 +2389,16 @@ ixgbe_dev_info_get(struct rte_eth_dev *dev, struct rte_eth_dev_info *dev_info)
 	dev_info->reta_size = ETH_RSS_RETA_SIZE_128;
 	dev_info->flow_type_rss_offloads = IXGBE_RSS_OFFLOAD_ALL;
 
-	dev_info->speed_capa = ETH_SPEED_CAP_1G | ETH_SPEED_CAP_10G;
+	dev_info->speed_capa = ETH_LINK_SPEED_1G | ETH_LINK_SPEED_10G;
 
 	if (hw->mac.type == ixgbe_mac_X540 ||
 	    hw->mac.type == ixgbe_mac_X540_vf ||
 	    hw->mac.type == ixgbe_mac_X550 ||
-	    hw->mac.type == ixgbe_mac_X550_vf)
+	    hw->mac.type == ixgbe_mac_X550_vf) {
 
-		dev_info->speed_capa |= ETH_SPEED_CAP_100M_FD /*|
-					ETH_SPEED_CAP_100M_HD*/;
+		dev_info->speed_capa |= ETH_LINK_SPEED_100M /*|
+					ETH_LINK_SPEED_100M_HD*/;
+	}
 }
 
 static void
@@ -2471,9 +2461,9 @@ ixgbe_dev_link_update(struct rte_eth_dev *dev, int wait_to_complete)
 	int link_up;
 	int diag;
 
-	link.link_status = 0;
+	link.link_status = ETH_LINK_DOWN;
 	link.link_speed = 0;
-	link.link_duplex = 0;
+	link.link_duplex = ETH_LINK_HALF_DUPLEX;
 	memset(&old, 0, sizeof(old));
 	rte_ixgbe_dev_atomic_read_link_status(dev, &old);
 
@@ -2486,8 +2476,8 @@ ixgbe_dev_link_update(struct rte_eth_dev *dev, int wait_to_complete)
 		diag = ixgbe_check_link(hw, &link_speed, &link_up, 1);
 
 	if (diag != 0) {
-		link.link_speed = ETH_LINK_SPEED_100;
-		link.link_duplex = ETH_LINK_HALF_DUPLEX;
+		link.link_speed = ETH_SPEED_NUM_100M;
+		link.link_duplex = ETH_LINK_FULL_DUPLEX;
 		rte_ixgbe_dev_atomic_write_link_status(dev, &link);
 		if (link.link_status == old.link_status)
 			return -1;
@@ -2500,26 +2490,26 @@ ixgbe_dev_link_update(struct rte_eth_dev *dev, int wait_to_complete)
 			return -1;
 		return 0;
 	}
-	link.link_status = 1;
+	link.link_status = ETH_LINK_UP;
 	link.link_duplex = ETH_LINK_FULL_DUPLEX;
 
 	switch (link_speed) {
 	default:
 	case IXGBE_LINK_SPEED_UNKNOWN:
-		link.link_duplex = ETH_LINK_HALF_DUPLEX;
-		link.link_speed = ETH_LINK_SPEED_100;
+		link.link_duplex = ETH_LINK_FULL_DUPLEX;
+		link.link_speed = ETH_SPEED_NUM_100M;
 		break;
 
 	case IXGBE_LINK_SPEED_100_FULL:
-		link.link_speed = ETH_LINK_SPEED_100;
+		link.link_speed = ETH_SPEED_NUM_100M;
 		break;
 
 	case IXGBE_LINK_SPEED_1GB_FULL:
-		link.link_speed = ETH_LINK_SPEED_1000;
+		link.link_speed = ETH_SPEED_NUM_1G;
 		break;
 
 	case IXGBE_LINK_SPEED_10GB_FULL:
-		link.link_speed = ETH_LINK_SPEED_10000;
+		link.link_speed = ETH_SPEED_NUM_10G;
 		break;
 	}
 	rte_ixgbe_dev_atomic_write_link_status(dev, &link);
