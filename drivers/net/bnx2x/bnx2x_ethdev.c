@@ -45,8 +45,12 @@ bnx2x_link_update(struct rte_eth_dev *dev)
 			dev->data->dev_link.link_duplex = ETH_LINK_HALF_DUPLEX;
 			break;
 		default:
-			dev->data->dev_link.link_duplex = ETH_LINK_AUTONEG_DUPLEX;
+			break;
 	}
+
+	dev->data->dev_link.link_autoneg = ~(dev->data->dev_conf.link_speeds &
+						ETH_LINK_SPEED_NO_AUTONEG);
+
 	dev->data->dev_link.link_status = sc->link_vars.link_up;
 }
 
@@ -347,7 +351,7 @@ bnx2x_dev_infos_get(struct rte_eth_dev *dev, __rte_unused struct rte_eth_dev_inf
 	dev_info->min_rx_bufsize = BNX2X_MIN_RX_BUF_SIZE;
 	dev_info->max_rx_pktlen  = BNX2X_MAX_RX_PKT_LEN;
 	dev_info->max_mac_addrs  = BNX2X_MAX_MAC_ADDRS;
-	dev_info->speed_capa = ETH_SPEED_CAP_10G | ETH_SPEED_CAP_20G;
+	dev_info->speed_capa = ETH_LINK_SPEED_10G | ETH_LINK_SPEED_20G;
 }
 
 static void

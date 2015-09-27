@@ -831,7 +831,7 @@ nfp_net_link_update(struct rte_eth_dev *dev, __rte_unused int wait_to_complete)
 
 	link.link_duplex = ETH_LINK_FULL_DUPLEX;
 	/* Other cards can limit the tx and rx rate per VF */
-	link.link_speed = ETH_LINK_SPEED_40G;
+	link.link_speed = ETH_SPEED_NUM_40G;
 
 	if (old.link_status != link.link_status) {
 		nfp_net_dev_atomic_write_link_status(dev, &link);
@@ -1072,7 +1072,7 @@ nfp_net_infos_get(struct rte_eth_dev *dev, struct rte_eth_dev_info *dev_info)
 	dev_info->reta_size = NFP_NET_CFG_RSS_ITBL_SZ;
 	dev_info->hash_key_size = NFP_NET_CFG_RSS_KEY_SZ;
 
-	dev_info->speed_capa = ETH_SPEED_CAP_50G | ETH_SPEED_CAP_100G;
+	dev_info->speed_capa = ETH_LINK_SPEED_50G | ETH_LINK_SPEED_100G;
 }
 
 static uint32_t

@@ -200,7 +200,7 @@ app_ports_check_link(void)
 		port = (uint8_t) app.ports[i];
 		memset(&link, 0, sizeof(link));
 		rte_eth_link_get_nowait(port, &link);
-		RTE_LOG(INFO, USER1, "Port %u (%u Gbps) %s\n",
+		RTE_LOG(INFO, USER1, "Port %u (%d Gbps) %s\n",
 			port,
 			link.link_speed / 1000,
 			link.link_status ? "UP" : "DOWN");

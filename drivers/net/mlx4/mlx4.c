@@ -4265,8 +4265,8 @@ mlx4_dev_infos_get(struct rte_eth_dev *dev, struct rte_eth_dev_info *info)
 	if (priv_get_ifname(priv, &ifname) == 0)
 		info->if_index = if_nametoindex(ifname);
 
-	info->speed_capa = ETH_SPEED_CAP_10G |ETH_SPEED_CAP_40G |
-					ETH_SPEED_CAP_56G;
+	info->speed_capa = ETH_LINK_SPEED_10G |ETH_LINK_SPEED_40G |
+					ETH_LINK_SPEED_56G;
 
 	priv_unlock(priv);
 }
@@ -4636,6 +4636,8 @@ mlx4_link_update_unlocked(struct rte_eth_dev *dev, int wait_to_complete)
 		dev_link.link_speed = link_speed;
 	dev_link.link_duplex = ((edata.duplex == DUPLEX_HALF) ?
 				ETH_LINK_HALF_DUPLEX : ETH_LINK_FULL_DUPLEX);
+	dev_link.link_autoneg = ~(dev->data->dev_conf.link_speeds &
+						ETH_LINK_SPEED_NO_AUTONEG);
 	if (memcmp(&dev_link, &dev->data->dev_link, sizeof(dev_link))) {
 		/* Link status changed. */
 		dev->data->dev_link = dev_link;

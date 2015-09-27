@@ -2241,7 +2241,7 @@ set_queue_rate_limit(portid_t port_id, uint16_t queue_idx, uint16_t rate)
 		return 1;
 	rte_eth_link_get_nowait(port_id, &link);
 	if (rate > link.link_speed) {
-		printf("Invalid rate value:%u bigger than link speed: %u\n",
+		printf("Invalid rate value:%u bigger than link speed: %d\n",
 			rate, link.link_speed);
 		return 1;
 	}
@@ -2266,7 +2266,7 @@ set_vf_rate_limit(portid_t port_id, uint16_t vf, uint16_t rate, uint64_t q_msk)
 		return 1;
 	rte_eth_link_get_nowait(port_id, &link);
 	if (rate > link.link_speed) {
-		printf("Invalid rate value:%u bigger than link speed: %u\n",
+		printf("Invalid rate value:%u bigger than link speed: %d\n",
 			rate, link.link_speed);
 		return 1;
 	}

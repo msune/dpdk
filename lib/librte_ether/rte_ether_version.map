@@ -117,3 +117,9 @@ DPDK_2.2 {
 
 	local: *;
 };
+
+DPDK_2.3 {
+	global:
+
+	rte_eth_speed_to_bm_flag;
+}DPDK_2.2;

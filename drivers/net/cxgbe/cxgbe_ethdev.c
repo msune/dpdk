@@ -171,7 +171,7 @@ static void cxgbe_dev_info_get(struct rte_eth_dev *eth_dev,
 
 	device_info->rx_desc_lim = cxgbe_desc_lim;
 	device_info->tx_desc_lim = cxgbe_desc_lim;
-	device_info->speed_capa = ETH_SPEED_CAP_10G | ETH_SPEED_CAP_40G;
+	device_info->speed_capa = ETH_LINK_SPEED_10G | ETH_LINK_SPEED_40G;
 }
 
 static void cxgbe_dev_promiscuous_enable(struct rte_eth_dev *eth_dev)

@@ -603,8 +603,8 @@ virtual_ethdev_create(const char *name, struct ether_addr *mac_addr,
 
 	TAILQ_INIT(&(eth_dev->link_intr_cbs));
 
-	eth_dev->data->dev_link.link_status = 0;
-	eth_dev->data->dev_link.link_speed = ETH_LINK_SPEED_10000;
+	eth_dev->data->dev_link.link_status = ETH_LINK_DOWN;
+	eth_dev->data->dev_link.link_speed = ETH_SPEED_NUM_10G;
 	eth_dev->data->dev_link.link_duplex = ETH_LINK_FULL_DUPLEX;
 
 	eth_dev->data->mac_addrs = rte_zmalloc(name, ETHER_ADDR_LEN, 0);
