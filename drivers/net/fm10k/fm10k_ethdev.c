@@ -862,7 +862,7 @@ fm10k_link_update(struct rte_eth_dev *dev,
 	 * is no 50Gbps Ethernet. */
 	dev->data->dev_link.link_speed  = 0;
 	dev->data->dev_link.link_duplex = ETH_LINK_FULL_DUPLEX;
-	dev->data->dev_link.link_status = 1;
+	dev->data->dev_link.link_status = ETH_LINK_UP;
 
 	return 0;
 }
@@ -964,9 +964,9 @@ fm10k_dev_infos_get(struct rte_eth_dev *dev,
 				ETH_TXQ_FLAGS_NOOFFLOADS,
 	};
 
-	dev_info->speed_capa = ETH_SPEED_CAP_1G | ETH_SPEED_CAP_2_5G |
-					ETH_SPEED_CAP_10G | ETH_SPEED_CAP_25G |
-					ETH_SPEED_CAP_40G | ETH_SPEED_CAP_100G;
+	dev_info->speed_capa = ETH_LINK_SPEED_1G | ETH_LINK_SPEED_2_5G |
+				ETH_LINK_SPEED_10G | ETH_LINK_SPEED_25G |
+				ETH_LINK_SPEED_40G | ETH_LINK_SPEED_100G;
 }
 
 static int

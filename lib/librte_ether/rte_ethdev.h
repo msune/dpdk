@@ -238,26 +238,59 @@ struct rte_eth_stats {
 };
 
 /**
+ * Device supported speeds bitmap flags
+ */
+#define ETH_LINK_SPEED_AUTONEG		(0 << 0)  /*< Autonegociate (all speeds)  */
+#define ETH_LINK_SPEED_NO_AUTONEG	(1 << 0)  /*< Disable autoneg (fixed speed)  */
+#define ETH_LINK_SPEED_10M_HD		(1 << 1)  /*< 10 Mbps half-duplex */
+#define ETH_LINK_SPEED_10M		(1 << 2)  /*< 10 Mbps full-duplex */
+#define ETH_LINK_SPEED_100M_HD		(1 << 3)  /*< 100 Mbps half-duplex */
+#define ETH_LINK_SPEED_100M		(1 << 4)  /*< 100 Mbps full-duplex */
+#define ETH_LINK_SPEED_1G		(1 << 5)  /*< 1 Gbps */
+#define ETH_LINK_SPEED_2_5G		(1 << 6)  /*< 2.5 Gbps */
+#define ETH_LINK_SPEED_5G		(1 << 7)  /*< 5 Gbps */
+#define ETH_LINK_SPEED_10G		(1 << 8)  /*< 10 Mbps */
+#define ETH_LINK_SPEED_20G		(1 << 9)  /*< 20 Gbps */
+#define ETH_LINK_SPEED_25G		(1 << 10)  /*< 25 Gbps */
+#define ETH_LINK_SPEED_40G		(1 << 11)  /*< 40 Gbps */
+#define ETH_LINK_SPEED_50G		(1 << 12)  /*< 50 Gbps */
+#define ETH_LINK_SPEED_56G		(1 << 13)  /*< 56 Gbps */
+#define ETH_LINK_SPEED_100G		(1 << 14)  /*< 100 Gbps */
+
+/**
+ * Ethernet numeric link speeds in Mbps
+ */
+#define ETH_SPEED_NUM_NONE	0      /*< Not defined */
+#define ETH_SPEED_NUM_10M	10     /*< 10 Mbps */
+#define ETH_SPEED_NUM_100M	100    /*< 100 Mbps */
+#define ETH_SPEED_NUM_1G	1000   /*< 1 Gbps */
+#define ETH_SPEED_NUM_2_5G	2500   /*< 2.5 Gbps */
+#define ETH_SPEED_NUM_5G	5000   /*< 5 Gbps */
+#define ETH_SPEED_NUM_10G	10000  /*< 10 Mbps */
+#define ETH_SPEED_NUM_20G	20000  /*< 20 Gbps */
+#define ETH_SPEED_NUM_25G	25000  /*< 25 Gbps */
+#define ETH_SPEED_NUM_40G	40000  /*< 40 Gbps */
+#define ETH_SPEED_NUM_50G	50000  /*< 50 Gbps */
+#define ETH_SPEED_NUM_56G	56000  /*< 56 Gbps */
+#define ETH_SPEED_NUM_100G	100000 /*< 100 Gbps */
+
+/**
  * A structure used to retrieve link-level information of an Ethernet port.
  */
 struct rte_eth_link {
-	uint16_t link_speed;      /**< ETH_LINK_SPEED_[10, 100, 1000, 10000] */
-	uint16_t link_duplex;     /**< ETH_LINK_[HALF_DUPLEX, FULL_DUPLEX] */
-	uint8_t  link_status : 1; /**< 1 -> link up, 0 -> link down */
-}__attribute__((aligned(8)));     /**< aligned for atomic64 read/write */
+	uint32_t link_speed;       /**< Link speed (ETH_SPEED_NUM_) */
+	uint16_t link_duplex;      /**< 1 -> full duplex, 0 -> half duplex */
+	uint8_t link_autoneg : 1;  /**< 1 -> link speed has been autoneg */
+	uint8_t link_status  : 1;  /**< 1 -> link up, 0 -> link down */
+} __attribute__((aligned(8)));      /**< aligned for atomic64 read/write */
 
-#define ETH_LINK_SPEED_AUTONEG  0       /**< Auto-negotiate link speed. */
-#define ETH_LINK_SPEED_10       10      /**< 10 megabits/second. */
-#define ETH_LINK_SPEED_100      100     /**< 100 megabits/second. */
-#define ETH_LINK_SPEED_1000     1000    /**< 1 gigabits/second. */
-#define ETH_LINK_SPEED_10000    10000   /**< 10 gigabits/second. */
-#define ETH_LINK_SPEED_10G      10000   /**< alias of 10 gigabits/second. */
-#define ETH_LINK_SPEED_20G      20000   /**< 20 gigabits/second. */
-#define ETH_LINK_SPEED_40G      40000   /**< 40 gigabits/second. */
-
-#define ETH_LINK_AUTONEG_DUPLEX 0       /**< Auto-negotiate duplex. */
-#define ETH_LINK_HALF_DUPLEX    1       /**< Half-duplex connection. */
-#define ETH_LINK_FULL_DUPLEX    2       /**< Full-duplex connection. */
+/* Utility constants */
+#define ETH_LINK_HALF_DUPLEX    0	/**< Half-duplex connection. */
+#define ETH_LINK_FULL_DUPLEX    1	/**< Full-duplex connection. */
+#define ETH_LINK_SPEED_FIXED    0	/**< Link speed was not autonegociated. */
+#define ETH_LINK_SPEED_NEG      1	/**< Link speed was autonegociated. */
+#define ETH_LINK_DOWN		0	/**< Link is down. */
+#define ETH_LINK_UP		1	/**< Link is up. */
 
 /**
  * A structure used to configure the ring threshold registers of an RX/TX
@@ -747,10 +780,14 @@ struct rte_intr_conf {
  * configuration settings may be needed.
  */
 struct rte_eth_conf {
-	uint16_t link_speed;
-	/**< ETH_LINK_SPEED_10[0|00|000], or 0 for autonegotation */
-	uint16_t link_duplex;
-	/**< ETH_LINK_[HALF_DUPLEX|FULL_DUPLEX], or 0 for autonegotation */
+	uint32_t link_speeds; /**< bitmap of ETH_LINK_SPEED_XXX of speeds to be
+				used. ETH_LINK_SPEED_NO_AUTONEG disables link
+				autonegociation, and a unique speed shall be
+				set. Otherwise, the bitmap defines the set of
+				speeds to be advertised. If the special value
+				ETH_LINK_SPEED_AUTONEG (0) is used, all speeds
+				supported are advertised.
+				*/
 	struct rte_eth_rxmode rxmode; /**< Port RX configuration. */
 	struct rte_eth_txmode txmode; /**< Port TX configuration. */
 	uint32_t lpbk_mode; /**< Loopback operation mode. By default the value
@@ -810,26 +847,6 @@ struct rte_eth_conf {
 #define DEV_TX_OFFLOAD_UDP_TSO     0x00000040
 #define DEV_TX_OFFLOAD_OUTER_IPV4_CKSUM 0x00000080 /**< Used for tunneling packet. */
 #define DEV_TX_OFFLOAD_QINQ_INSERT 0x00000100
-
-/**
- * Device supported speeds
- */
-#define ETH_SPEED_CAP_NOT_PHY	(0)  /*< No phy media > */
-#define ETH_SPEED_CAP_10M_HD	(1 << 0)  /*< 10 Mbps half-duplex> */
-#define ETH_SPEED_CAP_10M_FD	(1 << 1)  /*< 10 Mbps full-duplex> */
-#define ETH_SPEED_CAP_100M_HD	(1 << 2)  /*< 100 Mbps half-duplex> */
-#define ETH_SPEED_CAP_100M_FD	(1 << 3)  /*< 100 Mbps full-duplex> */
-#define ETH_SPEED_CAP_1G	(1 << 4)  /*< 1 Gbps > */
-#define ETH_SPEED_CAP_2_5G	(1 << 5)  /*< 2.5 Gbps > */
-#define ETH_SPEED_CAP_5G	(1 << 6)  /*< 5 Gbps > */
-#define ETH_SPEED_CAP_10G	(1 << 7)  /*< 10 Mbps > */
-#define ETH_SPEED_CAP_20G	(1 << 8)  /*< 20 Gbps > */
-#define ETH_SPEED_CAP_25G	(1 << 9)  /*< 25 Gbps > */
-#define ETH_SPEED_CAP_40G	(1 << 10)  /*< 40 Gbps > */
-#define ETH_SPEED_CAP_50G	(1 << 11)  /*< 50 Gbps > */
-#define ETH_SPEED_CAP_56G	(1 << 12)  /*< 56 Gbps > */
-#define ETH_SPEED_CAP_100G	(1 << 13)  /*< 100 Gbps > */
-
 
 /**
  * Ethernet device information
@@ -1665,6 +1682,22 @@ struct eth_driver {
  *   the Ethernet driver.
  */
 extern void rte_eth_driver_register(struct eth_driver *eth_drv);
+
+/**
+ * Convert a numerical speed in Mbps to a bitmap flag that can be used in
+ * the bitmap link_speeds of the struct rte_eth_conf
+ *
+ * @param
+ *   Numerical speed value in Mbps
+ * @param
+ *   Boolean is duplex (only for 10/100 speeds)
+ * @param
+ *   On success, the converted speed into a bitmap flag
+ * @return
+ *   0 on success, -EINVAL if the speed cannot be mapped
+ */
+extern int rte_eth_speed_to_bm_flag(uint32_t speed, int duplex,
+							uint32_t *flag);
 
 /**
  * Configure an Ethernet device.

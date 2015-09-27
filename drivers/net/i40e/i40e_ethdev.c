@@ -835,27 +835,20 @@ i40e_vsi_disable_queues_intr(struct i40e_vsi *vsi)
 }
 
 static inline uint8_t
-i40e_parse_link_speed(uint16_t eth_link_speed)
+i40e_parse_link_speeds(uint16_t link_speeds)
 {
 	uint8_t link_speed = I40E_LINK_SPEED_UNKNOWN;
 
-	switch (eth_link_speed) {
-	case ETH_LINK_SPEED_40G:
-		link_speed = I40E_LINK_SPEED_40GB;
-		break;
-	case ETH_LINK_SPEED_20G:
-		link_speed = I40E_LINK_SPEED_20GB;
-		break;
-	case ETH_LINK_SPEED_10G:
-		link_speed = I40E_LINK_SPEED_10GB;
-		break;
-	case ETH_LINK_SPEED_1000:
-		link_speed = I40E_LINK_SPEED_1GB;
-		break;
-	case ETH_LINK_SPEED_100:
-		link_speed = I40E_LINK_SPEED_100MB;
-		break;
-	}
+	if (link_speeds & ETH_LINK_SPEED_40G)
+		link_speed |= I40E_LINK_SPEED_40GB;
+	if (link_speeds & ETH_LINK_SPEED_20G)
+		link_speed |= I40E_LINK_SPEED_20GB;
+	if (link_speeds & ETH_LINK_SPEED_10G)
+		link_speed |= I40E_LINK_SPEED_10GB;
+	if (link_speeds & ETH_LINK_SPEED_1G)
+		link_speed |= I40E_LINK_SPEED_1GB;
+	if (link_speeds & ETH_LINK_SPEED_100M)
+		link_speed |= I40E_LINK_SPEED_100MB;
 
 	return link_speed;
 }
@@ -924,9 +917,9 @@ i40e_apply_link_speed(struct rte_eth_dev *dev)
 	struct i40e_hw *hw = I40E_DEV_PRIVATE_TO_HW(dev->data->dev_private);
 	struct rte_eth_conf *conf = &dev->data->dev_conf;
 
-	speed = i40e_parse_link_speed(conf->link_speed);
+	speed = i40e_parse_link_speeds(conf->link_speeds);
 	abilities |= I40E_AQ_PHY_ENABLE_ATOMIC_LINK;
-	if (conf->link_speed == ETH_LINK_SPEED_AUTONEG)
+	if (conf->link_speeds & ETH_LINK_SPEED_AUTONEG)
 		abilities |= I40E_AQ_PHY_AN_ENABLED;
 	else
 		abilities |= I40E_AQ_PHY_LINK_ENABLED;
@@ -944,10 +937,8 @@ i40e_dev_start(struct rte_eth_dev *dev)
 
 	hw->adapter_stopped = 0;
 
-	if ((dev->data->dev_conf.link_duplex != ETH_LINK_AUTONEG_DUPLEX) &&
-		(dev->data->dev_conf.link_duplex != ETH_LINK_FULL_DUPLEX)) {
-		PMD_INIT_LOG(ERR, "Invalid link_duplex (%hu) for port %hhu",
-			     dev->data->dev_conf.link_duplex,
+	if (dev->data->dev_conf.link_speeds & ETH_LINK_SPEED_NO_AUTONEG) {
+		PMD_INIT_LOG(ERR, "Invalid link_speeds for port %hhu; autonegociation disabled",
 			     dev->data->port_id);
 		return -EINVAL;
 	}
@@ -995,6 +986,13 @@ i40e_dev_start(struct rte_eth_dev *dev)
 	}
 
 	/* Apply link configure */
+	if (dev->data->dev_conf.link_speeds & ~(ETH_LINK_SPEED_100M |
+				ETH_LINK_SPEED_1G | ETH_LINK_SPEED_10G |
+				ETH_LINK_SPEED_20G | ETH_LINK_SPEED_40G)) {
+		PMD_DRV_LOG(ERR, "Invalid link setting");
+		goto err_up;
+	}
+
 	ret = i40e_apply_link_speed(dev);
 	if (I40E_SUCCESS != ret) {
 		PMD_DRV_LOG(ERR, "Fail to apply link setting");
@@ -1209,7 +1207,7 @@ i40e_dev_link_update(struct rte_eth_dev *dev,
 		/* Get link status information from hardware */
 		status = i40e_aq_get_link_info(hw, false, &link_status, NULL);
 		if (status != I40E_SUCCESS) {
-			link.link_speed = ETH_LINK_SPEED_100;
+			link.link_speed = ETH_SPEED_NUM_100M;
 			link.link_duplex = ETH_LINK_FULL_DUPLEX;
 			PMD_DRV_LOG(ERR, "Failed to get link info");
 			goto out;
@@ -1231,22 +1229,22 @@ i40e_dev_link_update(struct rte_eth_dev *dev,
 	/* Parse the link status */
 	switch (link_status.link_speed) {
 	case I40E_LINK_SPEED_100MB:
-		link.link_speed = ETH_LINK_SPEED_100;
+		link.link_speed = ETH_SPEED_NUM_100M;
 		break;
 	case I40E_LINK_SPEED_1GB:
-		link.link_speed = ETH_LINK_SPEED_1000;
+		link.link_speed = ETH_SPEED_NUM_1G;
 		break;
 	case I40E_LINK_SPEED_10GB:
-		link.link_speed = ETH_LINK_SPEED_10G;
+		link.link_speed = ETH_SPEED_NUM_10G;
 		break;
 	case I40E_LINK_SPEED_20GB:
-		link.link_speed = ETH_LINK_SPEED_20G;
+		link.link_speed = ETH_SPEED_NUM_20G;
 		break;
 	case I40E_LINK_SPEED_40GB:
-		link.link_speed = ETH_LINK_SPEED_40G;
+		link.link_speed = ETH_SPEED_NUM_40G;
 		break;
 	default:
-		link.link_speed = ETH_LINK_SPEED_100;
+		link.link_speed = ETH_SPEED_NUM_100M;
 		break;
 	}
 
@@ -1687,10 +1685,10 @@ i40e_dev_info_get(struct rte_eth_dev *dev, struct rte_eth_dev_info *dev_info)
 
 	if (i40e_is_40G_device(hw->device_id))
 		/* For XL710 */
-		dev_info->speed_capa = ETH_SPEED_CAP_1G | ETH_SPEED_CAP_10G;
+		dev_info->speed_capa = ETH_LINK_SPEED_1G | ETH_LINK_SPEED_10G;
 	else
 		/* For X710 */
-		dev_info->speed_capa = ETH_SPEED_CAP_10G | ETH_SPEED_CAP_40G;
+		dev_info->speed_capa = ETH_LINK_SPEED_10G | ETH_LINK_SPEED_40G;
 
 }
 
@@ -6195,15 +6193,15 @@ i40e_timesync_enable(struct rte_eth_dev *dev)
 	uint32_t tsync_inc_h;
 
 	switch (link->link_speed) {
-	case ETH_LINK_SPEED_40G:
+	case ETH_SPEED_NUM_40G:
 		tsync_inc_l = I40E_PTP_40GB_INCVAL & 0xFFFFFFFF;
 		tsync_inc_h = I40E_PTP_40GB_INCVAL >> 32;
 		break;
-	case ETH_LINK_SPEED_10G:
+	case ETH_SPEED_NUM_10G:
 		tsync_inc_l = I40E_PTP_10GB_INCVAL & 0xFFFFFFFF;
 		tsync_inc_h = I40E_PTP_10GB_INCVAL >> 32;
 		break;
-	case ETH_LINK_SPEED_1000:
+	case ETH_SPEED_NUM_1G:
 		tsync_inc_l = I40E_PTP_1GB_INCVAL & 0xFFFFFFFF;
 		tsync_inc_h = I40E_PTP_1GB_INCVAL >> 32;
 		break;

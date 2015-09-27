@@ -1072,6 +1072,55 @@ rte_eth_dev_check_mq_mode(uint8_t port_id, uint16_t nb_rx_q, uint16_t nb_tx_q,
 }
 
 int
+rte_eth_speed_to_bm_flag(uint32_t speed, int duplex, uint32_t *flag)
+{
+	switch (speed) {
+	case ETH_SPEED_NUM_10M:
+		*flag = (duplex) ? ETH_LINK_SPEED_10M :
+							ETH_LINK_SPEED_10M_HD;
+		break;
+	case ETH_SPEED_NUM_100M:
+		*flag = (duplex) ? ETH_LINK_SPEED_100M :
+							ETH_LINK_SPEED_100M_HD;
+		break;
+	case ETH_SPEED_NUM_1G:
+		*flag = ETH_LINK_SPEED_1G;
+		break;
+	case ETH_SPEED_NUM_2_5G:
+		*flag = ETH_LINK_SPEED_2_5G;
+		break;
+	case ETH_SPEED_NUM_5G:
+		*flag = ETH_LINK_SPEED_5G;
+		break;
+	case ETH_SPEED_NUM_10G:
+		*flag = ETH_LINK_SPEED_10G;
+		break;
+	case ETH_SPEED_NUM_20G:
+		*flag = ETH_LINK_SPEED_20G;
+		break;
+	case ETH_SPEED_NUM_25G:
+		*flag = ETH_LINK_SPEED_25G;
+		break;
+	case ETH_SPEED_NUM_40G:
+		*flag = ETH_LINK_SPEED_40G;
+		break;
+	case ETH_SPEED_NUM_50G:
+		*flag = ETH_LINK_SPEED_50G;
+		break;
+	case ETH_SPEED_NUM_56G:
+		*flag = ETH_LINK_SPEED_56G;
+		break;
+	case ETH_SPEED_NUM_100G:
+		*flag = ETH_LINK_SPEED_100G;
+		break;
+	default:
+		return -EINVAL;
+	}
+
+	return 0;
+}
+
+int
 rte_eth_dev_configure(uint8_t port_id, uint16_t nb_rx_q, uint16_t nb_tx_q,
 		      const struct rte_eth_conf *dev_conf)
 {
