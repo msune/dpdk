@@ -20,6 +20,18 @@ Build the docs and view the output file to ensure the changes are correct::
 New Features
 ------------
 
+* **ethdev: define a set of advertised link speeds.**
+
+  Added functionality to Allow defining a set of advertised speeds for
+  auto-negociation, explicitely disabling link auto-negociation (single speed)
+  and full auto-negociation.
+
+* **ethdev: add speed_cap bitmap for link speed capabilities.**
+
+  ``struct rte_eth_dev_info`` has now ``speed_cap`` bitmap, which allows the
+  application to recover the supported speeds for that ethernet device.
+
+
 This section should contain new features added in this release. Sample format:
 
 * **Add a title in the past tense with a full stop.**
@@ -55,6 +67,11 @@ This section should contain new features added in this release. Sample format:
 Resolved Issues
 ---------------
 
+* **ethdev: Fixed link_speed overflow in rte_eth_link for 100Gbps.**
+
+  100Gbps in Mbps (100000) exceeds 16 bit max value of ``link_speed`` in
+  ``rte_eth_link``.
+
 This section should contain bug fixes added to the relevant sections. Sample format:
 
 * **code/section Fixed issue in the past tense with a full stop.**
@@ -87,6 +104,9 @@ Drivers
 Libraries
 ~~~~~~~~~
 
+* New API call, ``rte_eth_speed_to_bm_flag`` in ethdev to, map numerical speeds
+  to bitmap fields.
+
 
 Examples
 ~~~~~~~~
@@ -118,6 +138,13 @@ This section should contain API changes. Sample format:
 
 ABI Changes
 -----------
+
+* The ethdev ``rte_eth_link`` and ``rte_eth_conf`` structures were changed to
+  support the new link API, as well as ``ETH_LINK_HALF``/``FULL_DUPLEX``.
+
+* The ethdev ``rte_eth_dev_info`` was changed to support device speed
+  capabilities.
+
 
 * Add a short 1-2 sentence description of the ABI change that was announced in
   the previous releases and made in this release. Use fixed width quotes for

@@ -88,6 +88,7 @@ Most of these differences are summarized below.
    ==================== = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
    link status
    link status event
+   Speed capabilities
    Rx interrupt
    queue start/stop
    MTU update
