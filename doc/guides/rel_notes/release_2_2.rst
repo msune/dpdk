@@ -4,6 +4,17 @@ DPDK Release 2.2
 New Features
 ------------
 
+* **ethdev: define a set of advertised link speeds.**
+
+  Allowing to define a set of advertised speeds for auto-negociation,
+  explicitely disable link auto-negociation (single speed) and full
+  auto-negociation.
+
+* **ethdev: add speed_cap bitmap to recover eth device link speed capabilities
+  define a set of advertised link speeds.**
+
+  ``struct rte_eth_dev_info`` has now speed_cap bitmap, which allows the
+  application to recover the supported speeds for that ethernet device.
 
 Resolved Issues
 ---------------
@@ -48,6 +59,11 @@ Libraries
   Fixed issue where an incorrect Cuckoo Hash key table size could be
   calculated limiting the size to 4GB.
 
+* **ethdev: Fixed link_speed overflow in rte_eth_link for 100Gbps.**
+
+  100Gbps in Mbps (100000) exceeds 16 bit max value of ``link_speed`` in
+  ``rte_eth_link``.
+
 
 Examples
 ~~~~~~~~
@@ -81,7 +97,6 @@ API Changes
 * The deprecated ring PMD functions are removed:
   rte_eth_ring_pair_create() and rte_eth_ring_pair_attach().
 
-
 ABI Changes
 -----------
 
@@ -90,6 +105,11 @@ ABI Changes
 
 * The ethdev flow director entries for SCTP were changed.
   It was already done in 2.1 for CONFIG_RTE_NEXT_ABI.
+
+* The ethdev rte_eth_link and rte_eth_conf structures were changes to
+  support the new link API.
+
+* The ethdev rte_eth_dev_info was changed to support device speed capabilities.
 
 * The mbuf structure was changed to support unified packet type.
   It was already done in 2.1 for CONFIG_RTE_NEXT_ABI.
