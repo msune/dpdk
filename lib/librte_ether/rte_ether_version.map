@@ -127,3 +127,9 @@ DPDK_2.1 {
 	rte_eth_timesync_read_tx_timestamp;
 
 } DPDK_2.0;
+
+DPDK_2.2 {
+	global:
+
+	rte_eth_speed_to_bm_flag;
+} DPDK_2.1;
