@@ -71,6 +71,13 @@
 #include "rte_cryptodev.h"
 #include "rte_cryptodev_pmd.h"
 
+#ifdef RTE_LIBRTE_CRYPTODEV_DEBUG
+#define RTE_PMD_DEBUG_TRACE(...) \
+	rte_pmd_debug_trace(__func__, __VA_ARGS__)
+#else
+#define RTE_PMD_DEBUG_TRACE(fmt, args...)
+#endif
+
 struct rte_cryptodev rte_crypto_devices[RTE_CRYPTO_MAX_DEVS];
 
 struct rte_cryptodev *rte_cryptodevs = &rte_crypto_devices[0];

@@ -62,13 +62,6 @@ struct rte_cryptodev_qp_conf;
 
 enum rte_cryptodev_event_type;
 
-#ifdef RTE_LIBRTE_CRYPTODEV_DEBUG
-#define RTE_PMD_DEBUG_TRACE(...) \
-	rte_pmd_debug_trace(__func__, __VA_ARGS__)
-#else
-#define RTE_PMD_DEBUG_TRACE(fmt, args...)
-#endif
-
 struct rte_cryptodev_session {
 	struct {
 		uint8_t dev_id;
